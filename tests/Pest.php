@@ -43,7 +43,8 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+function validate(array $requestData, array $rules): bool
 {
-    // ..
+    $validator = Validator::make($requestData, $rules);
+    return $validator->passes();
 }
