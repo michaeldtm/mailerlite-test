@@ -11,7 +11,11 @@
 |
 */
 
-uses(Tests\TestCase::class)->in('Feature');
+use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
+use Illuminate\Support\Facades\Validator;
+
+uses(Tests\TestCase::class)->in('Feature', 'Unit');
+uses(LazilyRefreshDatabase::class)->in('Feature');
 
 /*
 |--------------------------------------------------------------------------
