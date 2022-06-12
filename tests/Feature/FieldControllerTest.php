@@ -13,19 +13,21 @@ it('should retrieve all fields on database', function () {
 });
 
 it('should create a field successfully', function () {
-    $response = $this->postJson('/api/fields', ['title' => 'Title', 'type' => 'string']);
+    $field = Field::factory()->make();
+    $response = $this->postJson('/api/fields', $field->toArray());
     $response->assertOk()
         ->assertJson(fn(AssertableJson $json) =>
             $json->has('data', fn($json) =>
-                $json->where('title', 'Title')
-                    ->where('type', 'string')
+                $json->where('title', $field->title)
+                    ->where('type', $field->type)
+                    ->where('subscriber_id', $field->subscriber_id)
                     ->etc()
                 )
             );
-    $this->assertDatabaseHas('fields', ['title' => 'Title', 'type' => 'string']);
+    $this->assertDatabaseHas('fields', $field->toArray());
 });
 
-it('should fail validation when creating a field', function ($expect, $data) {
+it('should fail creating a field when validation fails', function ($expect, $data) {
     $response = $this->postJson('/api/fields', $data);
     $response->assertStatus(422);
     $this->assertDatabaseMissing('fields', $data);
@@ -39,6 +41,7 @@ it('should show a field successfully', function () {
         $json->has('data', fn($json) =>
             $json->where('title', $field->title)
                 ->where('type', $field->type)
+                ->where('subscriber_id', $field->subscriber_id)
                 ->etc()
             )
         );
@@ -51,15 +54,18 @@ it('should fail if field does not exists on database', function () {
 
 it('should update a field successfully', function () {
     $field = Field::factory()->create();
-    $response = $this->putJson('/api/fields/' . $field->id, ['title' => 'Other title', 'type' => 'string']);
+    $data = ['title' => 'Other title', 'type' => 'string', 'subscriber_id' => $field->subscriber_id];
+    $response = $this->putJson('/api/fields/' . $field->id, $data);
     $response->assertOk()
         ->assertJson(fn(AssertableJson $json) =>
             $json->has('data', fn($json) =>
-            $json->where('title', 'Other title')
+                $json->where('title', $data['title'])
+                    ->where('type', $data['type'])
+                    ->where('subscriber_id', $data['subscriber_id'])
                     ->etc()
                 )
             );
-    $this->assertDatabaseHas('fields', ['title' => 'Other title', 'type' => 'string']);
+    $this->assertDatabaseHas('fields', $data);
 });
 
 it('should deleted a field successfully', function () {

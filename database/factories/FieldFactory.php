@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Subscriber;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,8 +18,9 @@ class FieldFactory extends Factory
     public function definition()
     {
         return [
-            'title' => $this->faker->name(),
-            'type' => 'string'
+            'title' => $this->faker->realText(),
+            'type' => 'string',
+            'subscriber_id' => Subscriber::factory()->create()
         ];
     }
 }

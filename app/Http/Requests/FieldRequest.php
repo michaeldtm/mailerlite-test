@@ -25,7 +25,8 @@ class FieldRequest extends FormRequest
     {
         return [
             'title' => 'required|string:255',
-            'type' => 'required|string|in:date,number,string,boolean'
+            'type' => 'required|string|in:date,number,string,boolean',
+            'subscriber_id' => 'required|integer|exists:subscribers,id'
         ];
     }
 }

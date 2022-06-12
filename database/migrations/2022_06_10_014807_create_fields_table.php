@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Subscriber;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -17,6 +18,7 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->enum('type', ['date', 'number', 'string', 'boolean']);
+            $table->foreignIdFor(Subscriber::class);
             $table->timestamps();
         });
     }
