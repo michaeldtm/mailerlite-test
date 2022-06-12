@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Field;
+use App\Models\Subscriber;
 use Illuminate\Testing\Fluent\AssertableJson;
 
 it('should retrieve all fields on database', function () {
@@ -68,6 +69,21 @@ it('should update a field successfully', function () {
     $this->assertDatabaseHas('fields', $data);
 });
 
+it('should fail update subscriber when validation fails', function ($title, $type, $subscriber_id) {
+    Subscriber::factory()->create();
+    $subscriber = Field::factory()->create();
+    $payload = [$title, $type, $subscriber_id];
+    $this->putJson('/api/subscribers/' . $subscriber->id, $payload)
+        ->assertStatus(422);
+    $this->assertDatabaseMissing('subscribers', $payload);
+})->with([
+    ['title' => '', 'type' => 'string', 'subscriber_id' => 1],
+    ['title' => 'Some title', 'type' => '', 'subscriber_id' => 1],
+    ['title' => 'Some title', 'type' => 'datetime', 'subscriber_id' => 1],
+    ['title' => 'Some title', 'type' => 'string', 'subscriber_id' => null],
+    ['title' => 'Some title', 'type' => 'datetime', 'subscriber_id' => 2]
+]);
+
 it('should deleted a field successfully', function () {
     $field = Field::factory()->create();
     $response = $this->deleteJson('/api/fields/' . $field->id);
@@ -76,4 +92,9 @@ it('should deleted a field successfully', function () {
             'deleted' => true
         ]);
     $this->assertDatabaseMissing('fields', ['id' => $field->id]);
+});
+
+it('should fails when trying to deleted a non-existing field', function () {
+    $this->deleteJson('/api/fields/1')
+        ->assertNotFound();
 });
