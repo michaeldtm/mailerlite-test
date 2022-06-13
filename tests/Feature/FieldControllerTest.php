@@ -5,7 +5,10 @@ use App\Models\Subscriber;
 use Illuminate\Testing\Fluent\AssertableJson;
 
 it('should retrieve all fields on database', function () {
-    Field::factory()->count(5)->create();
+    Field::factory()
+        ->for(Subscriber::factory())
+        ->count(5)
+        ->create();
     $response = $this->getJson('/api/fields');
     $response->assertOk()
         ->assertJson(fn(AssertableJson $json) =>
@@ -14,7 +17,7 @@ it('should retrieve all fields on database', function () {
 });
 
 it('should create a field successfully', function () {
-    $field = Field::factory()->make();
+    $field = Field::factory()->for(Subscriber::factory())->make();
     $response = $this->postJson('/api/fields', $field->toArray());
     $response->assertOk()
         ->assertJson(fn(AssertableJson $json) =>
@@ -35,7 +38,7 @@ it('should fail creating a field when validation fails', function ($expect, $dat
 })->with('wrong_fields');
 
 it('should show a field successfully', function () {
-    $field = Field::factory()->create();
+    $field = Field::factory()->for(Subscriber::factory())->create();
     $response = $this->getJson('/api/fields/' . $field->id);
     $response->assertOk()
         ->assertJson(fn(AssertableJson $json) =>
@@ -54,7 +57,7 @@ it('should fail if field does not exists on database', function () {
 });
 
 it('should update a field successfully', function () {
-    $field = Field::factory()->create();
+    $field = Field::factory()->for(Subscriber::factory())->create();
     $data = ['title' => 'Other title', 'type' => 'string', 'subscriber_id' => $field->subscriber_id];
     $response = $this->putJson('/api/fields/' . $field->id, $data);
     $response->assertOk()
@@ -69,11 +72,10 @@ it('should update a field successfully', function () {
     $this->assertDatabaseHas('fields', $data);
 });
 
-it('should fail update subscriber when validation fails', function ($title, $type, $subscriber_id) {
-    Subscriber::factory()->create();
-    $subscriber = Field::factory()->create();
+it('should fail update field when validation fails', function ($title, $type, $subscriber_id) {
+    $field = Field::factory()->for(Subscriber::factory())->create();
     $payload = [$title, $type, $subscriber_id];
-    $this->putJson('/api/subscribers/' . $subscriber->id, $payload)
+    $this->putJson('/api/fields/' . $field->id, $payload)
         ->assertStatus(422);
     $this->assertDatabaseMissing('subscribers', $payload);
 })->with([
@@ -85,7 +87,7 @@ it('should fail update subscriber when validation fails', function ($title, $typ
 ]);
 
 it('should deleted a field successfully', function () {
-    $field = Field::factory()->create();
+    $field = Field::factory()->for(Subscriber::factory())->create();
     $response = $this->deleteJson('/api/fields/' . $field->id);
     $response->assertOk()
         ->assertJson([
