@@ -1,16 +1,20 @@
 <template>
-  <form @submit.prevent="submitSubscriber">
+  <form @submit.prevent="submit">
     <div class="space-y-4">
       <div class="grid grid-cols-6 gap-6">
         <div class="col-span-6 sm:col-span-6 lg:col-span-2">
           <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
           <input type="text" name="name" id="name" v-model="form.name"
                  class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+          <span v-if="this.errors.form?.name"
+                class="text-sm text-red-600 font-medium pb-0.5">{{ this.errors.form?.name[0] }}</span>
         </div>
         <div class="col-span-6 sm:col-span-6 lg:col-span-2">
           <label for="email_address" class="block text-sm font-medium text-gray-700">E-mail address</label>
           <input type="email" name="email_address" id="email_address" v-model="form.email_address"
                  class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+          <span v-if="this.errors.form?.email_address"
+                class="text-sm text-red-600 font-medium pb-0.5">{{ this.errors.form?.email_address[0] }}</span>
         </div>
         <div class="col-span-6 sm:col-span-6 lg:col-span-2">
           <label for="state" class="block text-sm font-medium text-gray-700">State</label>
@@ -18,6 +22,8 @@
                   class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
             <option v-for="(state, key) in options.states" :key="key" :value="state.id">{{ state.text }}</option>
           </select>
+          <span v-if="this.errors.form?.state"
+                class="text-sm text-red-600 font-medium pb-0.5">{{ this.errors.form?.state[0] }}</span>
         </div>
       </div>
       <div class="flex justify-end">
@@ -50,6 +56,8 @@
                 <input v-if="field.editing" type="input" name="title" id="title" v-model="editingField.title"
                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                 <span v-else>{{ field.title }}</span>
+                <span v-if="this.errors.editingField?.title && field.editing"
+                      class="text-sm text-red-600 font-medium pb-0.5">{{ this.errors.editingField?.title[0] }}</span>
               </td>
               <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                 <select v-if="field.editing" v-model="editingField.type" id="type" name="type"
@@ -57,6 +65,8 @@
                   <option v-for="(type, key) in options.types" :key="key" :value="type.id">{{ type.text }}</option>
                 </select>
                 <span v-else>{{ field.type }}</span>
+                <span v-if="this.errors.editingField?.type && field.editing"
+                      class="text-sm text-red-600 font-medium pb-0.5">{{ this.errors.editingField?.type[0] }}</span>
               </td>
               <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right space-x-4 text-sm font-medium sm:pr-6">
                 <button v-show="!isEditing" @click="editField(field)" class="text-indigo-600 hover:text-indigo-900">
@@ -87,6 +97,10 @@ export default {
       name: '',
       state: ''
     },
+    errors: {
+      form: null,
+      editingField: null
+    },
     editingField: {
       title: '',
       type: '',
@@ -112,8 +126,14 @@ export default {
       .then(({data}) => this.form = data.data)
   },
   methods: {
-    submitSubscriber() {
+    submit() {
       axios.put(`/api/subscribers/${this.$route.params.id}`, this.form)
+        .then(() => {
+          this.errors.form = null
+        })
+        .catch(({response: res}) => {
+          this.errors.form = {...res.data.errors}
+        })
     },
     newField() {
       this.form.fields.push({
@@ -138,8 +158,13 @@ export default {
           if (index >= 0) {
             this.form.fields.splice(index, 1, {...res.data, editing: false})
           } else {
+            this.form.fields.pop()
             this.form.fields.push({...res.data, editing: false})
           }
+          this.errors.editingField = null
+        })
+        .catch(({response: res}) => {
+          this.errors.editingField = {...res.data.errors}
         })
         .finally(() => {
           this.editingField = {title: '', type: '', editing: false}
