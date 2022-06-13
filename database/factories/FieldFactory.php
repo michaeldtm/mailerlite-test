@@ -18,9 +18,8 @@ class FieldFactory extends Factory
     public function definition()
     {
         return [
-            'title' => $this->faker->realText(),
-            'type' => 'string',
-            'subscriber_id' => Subscriber::factory()->create()
+            'title' => $this->faker->realText(30),
+            'type' => 'string'
         ];
     }
 }

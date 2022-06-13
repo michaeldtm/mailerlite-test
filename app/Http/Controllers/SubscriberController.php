@@ -17,7 +17,7 @@ class SubscriberController extends Controller
      */
     public function index(): Paginator
     {
-        return Subscriber::query()->simplePaginate();
+        return Subscriber::query()->orderByDesc('id')->simplePaginate();
     }
 
     /**
@@ -41,7 +41,7 @@ class SubscriberController extends Controller
      */
     public function show(Subscriber $subscriber): JsonResponse
     {
-        return response()->json(['data' => $subscriber]);
+        return response()->json(['data' => $subscriber->load('fields')]);
     }
 
     /**
